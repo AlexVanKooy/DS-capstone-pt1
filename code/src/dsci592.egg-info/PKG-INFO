@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: dsci592
+Version: 0.0.1
+Summary: Covid module for DSCI592
+Home-page: https://github.com/FuzzyPhoton/DS-capstone-pt1
+Author: DSCI Dream Team
+Author-email: noah.krieger@drexel.edu
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/FuzzyPhoton/DS-capstone-pt1/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+
+# DSCI 592: Capstone
+## Modeling Covid-19 Mortality using Hierarchical Clustering and a Recurrent Neural Network 
+
+
+

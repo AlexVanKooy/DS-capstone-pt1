@@ -1,0 +1,9 @@
+README.md
+setup.py
+dsci592.egg-info/PKG-INFO
+dsci592.egg-info/SOURCES.txt
+dsci592.egg-info/dependency_links.txt
+dsci592.egg-info/requires.txt
+dsci592.egg-info/top_level.txt
+src/__init__.py
+src/covid_collector.py
