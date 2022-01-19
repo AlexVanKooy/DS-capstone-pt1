@@ -11,6 +11,7 @@ import math
 from typing import List
 from collections import Counter, defaultdict
 import openpyxl
+import pkg_resources
 
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -134,9 +135,13 @@ def fetch_one(typename: str, body: dict, objs_only=True) -> dict:
 
 def pwd():
     print(os.getcwd())
+    my_data = pkg_resources.resource_filename(__name__, "config/counties.json")
+    print(my_data)
+    # my_data = pkg_resources.resource_string(__name__, "config/counties.json")
+    # print(my_data)
 
 
-def get_us_locations(file_name=os.path.join('config', 'C3-ai-Location-IDs.xlsx')):
+def get_us_locations(file_name=pkg_resources.resource_filename(__name__, "config/C3-ai-Location-IDs.xlsx")):
     """ Loads all US counties from C3 ai spreadsheet
 
     Args:
@@ -147,7 +152,7 @@ def get_us_locations(file_name=os.path.join('config', 'C3-ai-Location-IDs.xlsx')
 
     """
 
-    locations = pd.read_excel(file_name, sheet_name='County IDs', header=2)
+    locations = pd.read_excel(file_name, sheet_name='County IDs', header=2, engine='openpyxl')
     us_locations = locations[locations.Country == 'United States']
 
     return us_locations
@@ -170,8 +175,8 @@ def make_outbreaklocation_body(county_id: str) -> dict:
     }
 
 
-def load_population_data(file_name='../config/counties.json'):
-    """ Loads all population data for US counties and stores in a file called counties.json"""
+def retrieve_and_save_population_data(file_name, max_tries=10):
+    """ Loads all population data for US counties and stores in the filename provided"""
 
     us_locations = get_us_locations()
     keep_going = True
@@ -196,17 +201,17 @@ def load_population_data(file_name='../config/counties.json'):
                 except Exception as e:
                     county_data[county] = None
                     print(f'Problem with {county}: {e}')
-                sleep(1)
+                # sleep(1)
         with open(file_name, 'w') as file:
             json.dump(county_data, file)
-        if len(county_data) >= len(us_locations) or tries >= 5:
+        if len(county_data) >= len(us_locations) or tries >= max_tries:
             keep_going = False
         else:
             tries += 1
 
 
-def get_counties_df(file_name='../config/counties.json'):
-    with open(file_name) as file:
+def get_counties_df(counties_json_file_name):
+    with open(counties_json_file_name) as file:
         county_data = json.load(file)
 
     df = pd.DataFrame.from_dict(county_data)
@@ -217,18 +222,19 @@ def get_counties_df(file_name='../config/counties.json'):
     return pd.DataFrame(data, columns=df.index, index=df.columns)
 
 
-def get_county_stats_df(file_name='../config/county_stats.csv'):
+def get_county_stats_df(file_name=pkg_resources.resource_filename(__name__, "config/county_stats.csv")):
     """ Get county land area (LND110210) by FIPS code
     Source file at https://www.census.gov/data/datasets/time-series/demo/popest/2010s-counties-total.html
 
     """
-    return pd.read_csv(path.join('..', file_name))[['fips', 'LND110210']]
+    return pd.read_csv(file_name)[['fips', 'LND110210']]
 
 
-def get_last_file_date(county: str) -> str:
+def get_last_file_date(raw_file_path: str, county: str) -> str:
     """ Retrieves the last date through which data was loaded for the specified county
 
     Args:
+            file_path: Path to the raw files
             county: The county requested
 
     Returns:
@@ -238,7 +244,7 @@ def get_last_file_date(county: str) -> str:
     """
 
     max_date = '2020-01-01'
-    files = glob(path.join('../..', 'data', 'raw_data', f'{county}*.psv'))
+    files = glob(path.join(raw_file_path, f'{county}*.psv'))
     if not files:
         return max_date
     for file in files:
@@ -248,15 +254,14 @@ def get_last_file_date(county: str) -> str:
     return max_date
 
 
-def download_evalmetrics_data():
+def download_evalmetrics_data(raw_file_path, counties_json_file_name):
     """ Downloads the evalmetrics data from the last download
     through current """
 
     today = datetime.now().strftime('%Y-%m-%d')
 
     # Get the list of counties
-    counties_file = path.join('../..', 'config', 'counties.json')
-    with open(counties_file) as file:
+    with open(counties_json_file_name) as file:
         counties = json.load(file)
 
     # Iterate through counties saving the time series data
@@ -270,7 +275,7 @@ def download_evalmetrics_data():
             continue
 
         # Get the last date we processed
-        last_date = get_last_file_date(county)
+        last_date = get_last_file_date(raw_file_path, county)
 
         if last_date == today:
             continue
@@ -317,58 +322,60 @@ def download_evalmetrics_data():
 
             try:
                 df = evalmetrics("outbreaklocation", body)
-                file_name = path.join('../..', 'data', 'raw_data', f'{county}-part-{i}-{last_date}-{today}.psv')
+                file_name = path.join(raw_file_path, f'{county}-part-{i}-{last_date}-{today}.psv')
                 df.to_csv(file_name, sep='|')
             except Exception as e:
                 print(f'Error processing {county}: {e}')
 
             sleep(1)
 
-def save_raw_df(df: pd.DataFrame):
-    df.to_pickle(path.join('../..', 'data', 'raw_evalmetrics_df.pkl'))
+
+def save_raw_df(df: pd.DataFrame, pickled_data_path):
+    df.to_pickle(path.join(pickled_data_path, 'raw_evalmetrics_df.pkl'))
 
 
-def load_and_normalize_df(filename):
-    df = pd.read_csv(path.join('../..', 'data', 'raw_data', filename), delimiter='|', index_col=1)
+def load_and_normalize_df(file_name):
+    df = pd.read_csv(file_name, delimiter='|', index_col=1)
     df.drop(columns=['Unnamed: 0'], inplace=True)
     columns = {c: '.'.join(c.split('.')[-2:]) for c in df.columns}
     df.rename(columns=columns, inplace=True)
     return df
 
 
-def merge_county_parts_to_dataframe(filenames):
+def merge_county_parts_to_dataframe(file_names):
     df = load_and_normalize_df(filenames[0])
-    for filename in filenames[1:]:
-        df2 = load_and_normalize_df(filename)
+    for file_name in file_names[1:]:
+        df2 = load_and_normalize_df(file_name)
         df = df.join(df2)
     return df
 
 
-def save_county_merged_parts_df(county, df):
-    df.to_pickle(path.join('../..', 'data', 'processed_data', 'county_merged_parts',
-                           f'{county}.pkl'))
+def save_county_merged_parts_df(county, df, county_merged_parts_path):
+    df.to_pickle(path.join(county_merged_parts_path, f'{county}.pkl'))
 
 
-def get_counties_from_files():
-    return list({f.split('-part')[0] for f in os.listdir(path.join('..', 'data', 'raw_data'))})
+def get_counties_from_files(raw_file_path):
+    return list({f.split('-part')[0] for f in os.listdir(raw_file_path)})
 
 
-def get_dates_for_county(county):
-    files = glob(f'./data/{county}*')
+def get_dates_for_county(county, raw_file_path):
+    # files = glob(f'./data/{county}*')
+    files = glob(path.join(raw_file_path, f'{county}*'))
     dates = {re.findall('\d\d\d\d-\d\d-\d\d-\d\d\d\d-\d\d-\d\d', f)[0] for f in files}
     return list(dates)
 
 
-def get_county_files_for_date(county, dt):
-    files = glob(f'./data/raw_data/{county}-part-*-{dt}.psv')
+def get_county_files_for_date(county, dt, raw_file_path):
+    # files = glob(f'./data/raw_data/{county}-part-*-{dt}.psv')
+    files = glob(path.join(raw_file_path, f'{county}-part-*-{dt}.psv'))
     return [f[f.index(county):] for f in files]
 
 
-def process_county(county, county_population_stats):
+def process_county(county, county_population_stats, raw_file_path, county_merged_parts_path):
     df = None
-    dates = get_dates_for_county(county)
+    dates = get_dates_for_county(county, raw_file_path)
     for dt in dates:
-        files = get_county_files_for_date(county, dt)
+        files = get_county_files_for_date(county, dt, raw_file_path)
         if df is not None:
             df.append(merge_county_parts_to_dataframe(files))
         else:
@@ -376,12 +383,12 @@ def process_county(county, county_population_stats):
 
     for k, v in county_population_stats.iteritems():
         df[k] = v
-    save_county_merged_parts_df(county, df)
+    save_county_merged_parts_df(county, df, county_merged_parts_path)
     return df
 
 
-def get_county_population_stats():
-    county_population = get_counties_df()
+def get_county_population_stats(counties_json_file_name):
+    county_population = get_counties_df(counties_json_file_name)
     county_stats = get_county_stats_df()
     fips = []
     for county, population in county_population.iterrows():
@@ -396,9 +403,9 @@ def get_county_population_stats():
     return county_population
 
 
-def process_counties():
-    counties = get_counties_from_files()
-    county_population_stats = get_county_population_stats()
+def process_counties(raw_file_path, counties_json_file_name):
+    counties = get_counties_from_files(raw_file_path)
+    county_population_stats = get_county_population_stats(counties_json_file_name)
 
     for county in counties:
         # print(county)
@@ -460,8 +467,8 @@ def to_dict(data, col_name):
     return result
 
 
-def to_all_counties_dict(col_names):
-    counties = get_counties_from_files()
+def to_all_counties_dict(col_names, raw_file_path):
+    counties = get_counties_from_files(raw_file_path)
     results = defaultdict(defaultdict)
     for county in counties:
         try:
@@ -488,10 +495,9 @@ def to_dfs(all_counties_dict, col_names):
     return results
 
 
-def save_dfs(dfs):
+def save_dfs(dfs, processed_data_demographics_path):
     for k, v in dfs.items():
-        v.to_pickle(path.join('..', 'processed_data', 'demographics',
-                              f'{k}.pkl'))
+        v.to_pickle(path.join(processed_data_demographics_path, f'{k}.pkl'))
 
 
 def run():
