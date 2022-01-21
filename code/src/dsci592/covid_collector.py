@@ -19,6 +19,20 @@ from scipy.stats import gamma
 import numpy as np
 
 
+
+# Sample execution below
+# counties_json_file_name = r'C:\Users\noahk\projects\drexel\dsci592\DS-capstone-pt1\data\covid\config\counties.json'
+# raw_file_path = r'C:\Users\noahk\projects\drexel\dsci592\DS-capstone-pt1\data\covid\raw_data'
+# county_merged_parts_path = r'C:\Users\noahk\projects\drexel\dsci592\DS-capstone-pt1\data\covid\processed_data\county_merged_parts'
+#
+# cc.retrieve_and_save_population_data(counties_json_file)
+# cc.download_evalmetrics_data(raw_file_path, counties_json_file_name)
+# cc.process_counties(raw_file_path, counties_json_file_name, county_merged_parts_path, skip_if_exists=False)
+# sdf = cc.merge_processed_data(county_merged_parts_path)
+# covid_data_df = cc.filter_and_augment_merged_data(sdf)
+
+
+
 def read_data_json(typename, api, body):
     """
     From C3.ai
@@ -343,7 +357,7 @@ def load_and_normalize_df(file_name):
 
 
 def merge_county_parts_to_dataframe(file_names):
-    df = load_and_normalize_df(filenames[0])
+    df = load_and_normalize_df(file_names[0])
     for file_name in file_names[1:]:
         df2 = load_and_normalize_df(file_name)
         df = df.join(df2)
@@ -368,16 +382,18 @@ def get_dates_for_county(county, raw_file_path):
 def get_county_files_for_date(county, dt, raw_file_path):
     # files = glob(f'./data/raw_data/{county}-part-*-{dt}.psv')
     files = glob(path.join(raw_file_path, f'{county}-part-*-{dt}.psv'))
-    return [f[f.index(county):] for f in files]
+    # return [f[f.index(county):] for f in files]
+    return files
 
 
 def process_county(county, county_population_stats, raw_file_path, county_merged_parts_path):
     df = None
     dates = get_dates_for_county(county, raw_file_path)
+    dates.sort()
     for dt in dates:
         files = get_county_files_for_date(county, dt, raw_file_path)
         if df is not None:
-            df.append(merge_county_parts_to_dataframe(files))
+            df = df.append(merge_county_parts_to_dataframe(files))
         else:
             df = merge_county_parts_to_dataframe(files)
 
@@ -403,13 +419,20 @@ def get_county_population_stats(counties_json_file_name):
     return county_population
 
 
-def process_counties(raw_file_path, counties_json_file_name):
+def process_counties(raw_file_path, counties_json_file_name, county_merged_parts_path, skip_if_exists=False):
     counties = get_counties_from_files(raw_file_path)
     county_population_stats = get_county_population_stats(counties_json_file_name)
 
     for county in counties:
         # print(county)
-        process_county(county, county_population_stats.loc[county])
+        if skip_if_exists and path.exists(path.join(county_merged_parts_path, f'{county}.pkl')):
+            print('.', end='')
+            continue
+        try:
+            process_county(county, county_population_stats.loc[county], raw_file_path, county_merged_parts_path)
+        except Exception as ex:
+            print(f'Error processing {county}')
+            print(ex)
 
 
 def make_outbreaklocation_body_with_includes(county_id: str, includes: str = None) -> dict:
@@ -502,3 +525,186 @@ def save_dfs(dfs, processed_data_demographics_path):
 
 def run():
     pass
+
+
+def make_lookup_functions(fcc_county_file=pkg_resources.resource_filename(__name__, "config/fcc_county_fips.txt")):
+    """ Load FIPS codes and descriptions from the FCC.  Produces two lookup functions:
+    lookup FIPS from county and lookup county from FIPS. """
+
+    with open(fcc_county_file) as fh:
+        state = None
+        fips_to_county = {}
+        county_to_fips = {}
+        for row in fh:
+            if match := re.match(r'\s+(\d\d\d\d\d)\s+ (.*)', row):
+                fips, location = match.groups()
+                if fips.endswith('000'):
+                    state = location.replace(' ', '')
+                    continue
+
+                location = location.split(' County')[0]
+                location = location.split(' Borough')[0]
+                location = location.split(' Census Area')[0]
+                location = location.split(' Parish')[0]
+                location = location.split(' National Park')[0]
+
+                if state == 'Florida' and location == 'Dade':
+                    location = 'Miami-Dade'
+                if state == 'Massachusetts' and location == 'Dukes':
+                    location = 'DukesandNantucket'
+                if state == 'Alaska' and location == 'Wrangell-Petersburg':
+                    location = 'Wrangell'
+                if state == 'Alaska' and location == 'Skagway-Hoonah-Angoon':
+                    location = 'Skagway'
+                if state == 'Alaska' and location == 'Prince of Wales-Outer Ketchikan':
+                    location = 'Prince of Wales'
+                if state == 'New York' and location == 'New York':
+                    location = 'New York City'
+
+                try:
+                    location = ''.join([s[0].upper() + s[1:] for s in location.split(' ')])
+                except:
+                    pass  # garbage
+
+                county = location.replace(' ', '') + '_' + state + '_UnitedStates'
+                fips_to_county[int(fips)] = county
+                county_to_fips[county.lower()] = int(fips)
+
+        def lookup_county_from_fips(fips_):
+            return fips_to_county[int(fips_)]
+
+        def lookup_fips_from_county(county_):
+            try:
+                return county_to_fips[county_.lower()]
+            except KeyError:
+                pass
+
+            try:
+                county_ = county_.lower()
+                parts = county_.split('_')
+                parts[0] = parts[0][:parts[0].index('city')]
+                return county_to_fips['_'.join(parts)]
+            except:
+                pass
+
+            try:
+                parts = county_.split('_')
+                parts[0] = parts[0] + 'city'
+                return county_to_fips['_'.join(parts)]
+            except:
+                pass
+
+            parts = county_.split('_')
+            for k, v in county_to_fips.items():
+                part0, part1, _ = k.split('_')
+                if part1 != parts[1]:
+                    continue
+                if parts[0].startswith(part0) or part0.startswith(parts[0]):
+                    return v
+
+            raise KeyError
+
+        return lookup_county_from_fips, lookup_fips_from_county
+
+
+get_county_from_fips, get_fips_from_county = make_lookup_functions()
+
+
+def merge_processed_data(county_merged_parts_path) -> pd.DataFrame:
+    """ This function prepares the data for analysis.  It normalizes the FIPS code,
+    converts the date field into a Python date, gets rid of rows with missing data,
+    gets rid of non-counties (mostly cities) that crept into the data, turned cummulative
+    data into daily deltas, calculated the rolling average, and merges the population data. """
+
+    # path = './processed_data/county_merged_parts/*.pkl'
+    sdf = None
+    error_count = 0
+    total_length = 0
+    for file in glob(path.join(county_merged_parts_path, '*.pkl')):
+        # print('file:', file)
+        county = re.search(r'merged_parts.(.*)\.pkl', file).groups(1)[0]
+
+        df = pd.read_pickle(file)
+
+        try:
+            df.reset_index(inplace=True)
+            df.sort_values('dates', inplace=True)
+
+            df['fips'] = get_fips_from_county(county)
+            df['county'] = county
+            df['Date Local'] = df.dates.to_list()
+
+            # get rid of rows where confirmed deaths or confirmed cases are missing
+            df = df[df['JHU_ConfirmedDeaths.missing'] == 0]
+            df = df[df['JHU_ConfirmedCases.missing'] == 0]
+            df = df[df['NYT_ConfirmedCases.missing'] == 0]
+
+            # get rid of places without population.  These are city duplicates
+            'TotalPopulation.missing'
+            df = df[df['TotalPopulation.missing'] == 0]
+
+            # Turn cummulatives into daily deltas
+            diff = df[['JHU_ConfirmedDeaths.data', 'JHU_ConfirmedCases.data', 'JHU_ConfirmedRecoveries.data']].diff()
+            df['jhu_daily_death'] = diff['JHU_ConfirmedDeaths.data']
+            df['jhu_daily_cases'] = diff['JHU_ConfirmedCases.data']
+            df['jhu_daily_recoveries'] = diff['JHU_ConfirmedRecoveries.data']
+            df['jhu_daily_new_cases'] = df['jhu_daily_cases'] + df['jhu_daily_recoveries']
+
+            # Generate rolling averages
+            rolling = df.rolling(7, on='dates').mean()
+            df['jhu_daily_death_rolling_7'] = rolling.jhu_daily_death
+            df['jhu_daily_cases_rolling_7'] = rolling.jhu_daily_cases
+            df['jhu_daily_new_cases_rolling_7'] = rolling.jhu_daily_new_cases
+
+            rolling = df.rolling(30, on='dates').mean()
+            df['jhu_daily_death_rolling_30'] = rolling.jhu_daily_death
+            df['jhu_daily_cases_rolling_30'] = rolling.jhu_daily_cases
+            df['jhu_daily_new_cases_rolling_30'] = rolling.jhu_daily_new_cases
+
+            if sdf is not None:
+                sdf = sdf.append(df, ignore_index=True)
+            else:
+                sdf = df
+
+        except KeyError:
+            if not county.startswith('Unassigned') and not county.startswith('Outof') \
+                    and not county.endswith('_PuertoRico_UnitedStates'):
+                print(f'Key Error {county}')
+
+    sdf.drop(columns=['LND110210'], inplace=True)
+    county_pop_df = get_county_stats_df()
+    sdf = sdf.merge(county_pop_df, how='inner', on='fips')
+
+    return sdf
+
+
+def filter_and_augment_merged_data(sdf):
+    sdf_filtered = sdf.copy()
+    sdf_filtered = sdf_filtered[sdf_filtered.dates >= '2020-03-11']
+
+    sdf_filtered['jhu_death_rate'] = sdf_filtered['jhu_daily_death_rolling_7'] / sdf_filtered['latestTotalPopulation']
+    sdf_filtered['jhu_case_rate'] = sdf_filtered['jhu_daily_cases_rolling_7'] / sdf_filtered['latestTotalPopulation']
+    sdf_filtered['jhu_new_case_rate'] = sdf_filtered['jhu_daily_new_cases_rolling_7'] / sdf_filtered[
+        'latestTotalPopulation']
+    sdf_filtered['density'] = sdf_filtered['latestTotalPopulation'] / sdf_filtered['LND110210']
+    sdf_filtered['icu_beds_per_person'] = sdf_filtered['hospitalIcuBeds'] / sdf_filtered['latestTotalPopulation']
+    sdf_filtered['staffed_beds_per_person'] = sdf_filtered['hospitalStaffedBeds'] / sdf_filtered[
+        'latestTotalPopulation']
+    sdf_filtered['licensed_beds_per_person'] = sdf_filtered['hospitalLicensedBeds'] / sdf_filtered[
+        'latestTotalPopulation']
+    sdf_filtered['cold_days'] = [1 if t < 50 else 0 for t in sdf_filtered['AverageDailyTemperature.data']]
+    sdf_filtered['hot_days'] = [1 if t > 90 else 0 for t in sdf_filtered['AverageDailyTemperature.data']]
+    sdf_filtered['moderate_days'] = [1 if 50 <= t <= 90 else 0 for t in
+                                     sdf_filtered['AverageDailyTemperature.data']]
+    sdf_filtered['gte_65_percent'] = sdf_filtered['MaleAndFemale_AtLeast65_Population.data'] / sdf_filtered[
+        'latestTotalPopulation']
+    sdf_filtered['lt_18_percent'] = sdf_filtered['MaleAndFemale_Under18_Population.data'] / sdf_filtered[
+        'latestTotalPopulation']
+    sdf_filtered['employed_percent'] = sdf_filtered['BLS_EmployedPopulation.data'] / sdf_filtered[
+        'BLS_LaborForcePopulation.data']
+    sdf_filtered['unemployed_percent'] = sdf_filtered['BLS_UnemployedPopulation.data'] / sdf_filtered[
+        'BLS_LaborForcePopulation.data']
+
+    sdf_filtered = sdf_filtered.fillna(0)
+
+    return sdf_filtered
