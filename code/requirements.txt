@@ -6,3 +6,4 @@ requests
 scipy
 seaborn
 openpyxl
+tensorflow
