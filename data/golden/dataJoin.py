@@ -82,7 +82,7 @@ pm25DF.drop(['year'],axis=1,inplace=True)
 
 # In[9]:
 
-
+pm25DF['fips'] = pm25DF['fips'].astype(str).str.zfill(5)
 pm25DF= pm25DF[['fips','pm25']].groupby(['fips'],as_index=False).mean()
 
 
