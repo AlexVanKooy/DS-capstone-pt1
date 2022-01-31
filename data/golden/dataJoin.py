@@ -8,10 +8,14 @@
 
 import numpy as np, pandas as pd, pickle, bz2, time
 
+pd.set_option('display.max_columns',100)
+pd.set_option('display.max_rows',100)
+pd.get_option('display.max_columns'),pd.get_option('display.max_rows')
+
 
 # Functions
 
-# In[13]:
+# In[2]:
 
 
 def exportPbz2( outfile, infile ):
@@ -65,25 +69,32 @@ testDF['fips']=testDF['fips'].astype(int).astype(str)
 testDF['fips'] = testDF['fips'].str.zfill(5)
 
 
+# In[6]:
+
+
+testDF.drop('Date Local',axis=1,inplace=True)
+
+
 # Joining census and covid data
 
-# In[6]:
+# In[7]:
+
 
 testDF = testDF.merge(censusDF, left_on=['fips'], right_on=['fips'], how='left')
 
-# Import pm25
 
 # In[8]:
 
 
-pm25DF = pd.read_csv('../pm25/county_pm25.txt')
-pm25DF.drop(['year'],axis=1,inplace=True)
 
+
+# Import pm25
 
 # In[9]:
 
-pm25DF['fips'] = pm25DF['fips'].astype(str).str.zfill(5)
-pm25DF= pm25DF[['fips','pm25']].groupby(['fips'],as_index=False).mean()
+
+pm25DF = pd.read_csv('../pm25/county_pm25.txt')
+pm25DF.drop(['year'],axis=1,inplace=True)
 
 
 # In[10]:
@@ -92,16 +103,61 @@ pm25DF= pm25DF[['fips','pm25']].groupby(['fips'],as_index=False).mean()
 pm25DF['fips'] = pm25DF['fips'].astype(str).str.zfill(5)
 
 
+# In[11]:
+
+
+pm25DF= pm25DF[['fips','pm25']].groupby(['fips'],as_index=False).mean()
+
+
 # Put it all together
 
-# In[11]:
+# In[12]:
 
 
 testDF = testDF.merge(pm25DF, left_on=['fips'], right_on=['fips'], how='inner')
 
 
-# In[12]:
+# In[13]:
+
+
+testDF=testDF.infer_objects()
+
+
+# In[14]:
+
+
+print(testDF.shape)
+a = testDF.dtypes
+
+
+# In[15]:
+
+
+b = testDF.describe()
+_=[testDF.drop(col, axis=1, inplace=True) for col in b.columns if b.loc['std',col]==0]
+
+
+# In[16]:
+
+
+print(testDF.shape)
+c = testDF.dtypes
+
+
+# In[17]:
+
+
+a.index[~a.index.isin(c.index)]
+
+
+# In[19]:
 
 
 exportPbz2('feeFiFoFum', testDF)
+
+
+# In[ ]:
+
+
+
 
