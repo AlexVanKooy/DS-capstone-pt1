@@ -17,41 +17,15 @@ from tensorflow.keras import backend as K
 from sklearn.model_selection import train_test_split# Windows version
 
 
+# These are the ones we did NOT normalize/standardize
+cols_raw = ['fips','JHU_ConfirmedCases.data', 'JHU_ConfirmedDeaths.data', 'cyclical_sin', 'cyclical_cos', 'continuous_sin',
+       'continuous_cos']
+
 # this should be the current script's folder
 
 cwd = pathlib.Path.cwd()
 
-class DatasetManager():
-    def __init__(self, filepath) -> None:
-        self.datapath = filepath
-        self.df = None
-        self._load_bz2(self.datapath)
-    def _load_bz2(self)-> pd.DataFrame:
-        """Returns dataframe contained within the compressed pickle file
-        
-        """
-        with bz2.BZ2File(self.datapath, 'rb')as data:
-            self.df = pd.read_pickle(data)
-        
-    
-    def prep_df(self, drop_cols=None):
-        """ Preps the dataframe according to the group's convention
-        
-        """
-        if drop_cols == None:
-            drop_cols=['NYT_ConfirmedCases.data','NYT_ConfirmedDeaths.data','NYT_ConfirmedDeaths.missing',
-                       'county','LND110210','countyStateName','stateFip','countyFip']
-        # remove 
-        # self.df.columns = self.df.columns.str.replace(" ","")
-        self.df.drop(drop_cols,axis=1, inplace=True)
-   
-    def county_merger(self, file_Path):
-        counties = pd.read_csv(file_Path, delimiter='\t')
-        counties.columns = counties.columns.str.replace(" ", "")
-        counties = counties[['GEOID', 'INTPTLAT', 'INTPTLONG' ]]
-        self.df.fips = self.df.fips.astype('int64')
-        self.df = self.df.merge(counties, how='left', left_on='fips', right_on='GEOID')
-        self.df.drop(['GEOID'],axis=1, inplace=True)
+
     
     
         
