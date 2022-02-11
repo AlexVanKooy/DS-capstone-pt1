@@ -12,3 +12,4 @@ dsci591/data/covid/county_tp.pickle
 .vscode
 *.workspace
 experiments/avk/logs/
+experiments/avk/data/
