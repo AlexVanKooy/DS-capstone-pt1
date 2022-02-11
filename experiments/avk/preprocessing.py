@@ -71,6 +71,8 @@ class DatasetManager():
         self.feature_columns = None
         self.standard_drops = ['NYT_ConfirmedCases.data','NYT_ConfirmedDeaths.data','NYT_ConfirmedDeaths.missing',
                        'county','LND110210','countyStateName','stateFip','countyFip']
+        self.min_date =None
+        self.max_date = None
     def _load_bz2(self)-> pd.DataFrame:
         """Returns dataframe contained within the compressed pickle file
         
@@ -104,7 +106,21 @@ class DatasetManager():
         self.feature_column = get_latlong_fc(self.df)
         return 
     
-    
+    def date_magic(self):
+        self.df.dates = pd.to_datetime(self.df.dates, format='%Y-%m-%d')
+        self.min_date = min(self.df.dates)
+        self.max_date = max(self.df.dates)
+        self.df['day'] =(self.df.dates - self.min_date).dt.days
+        self.df.drop(['dates'], axis=1, inplace=True)
+        # Replace the integer representation of date with sin and cosine encoding
+        cyclical_interval    = 365
+        continuous_interval  = 3650
+        self.df['cyclical_sin']   = np.sin((self.df.day * 2 * np.pi)/cyclical_interval)
+        self.df['cyclical_cos']   = np.cos((self.df.day * 2 * np.pi)/cyclical_interval)
+        self.df['continuous_sin'] = np.sin((self.df.day * 2 * np.pi)/continuous_interval)
+        self.df['continuous_cos'] = np.cos((self.df.day * 2 * np.pi)/continuous_interval)
+        self.df.drop('day', axis  =1, inplace=True)
+        return
 
         
         
