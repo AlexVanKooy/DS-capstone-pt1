@@ -23,49 +23,12 @@ cols_raw = ['fips','JHU_ConfirmedCases.data', 'JHU_ConfirmedDeaths.data', 'cycli
 
 cwd = pathlib.Path.cwd()
 
-
-
-
-
-
-
-
-class DatasetManager():
-    def __init__(self, filepath) -> None:
-        self.datapath = filepath
-        self.df = None
-        self._load_bz2(self.datapath)
-    def _load_bz2(self)-> pd.DataFrame:
-        """Returns dataframe contained within the compressed pickle file
-        
-        """
-        with bz2.BZ2File(self.datapath, 'rb')as data:
-            self.df = pd.read_pickle(data)
-        
-    
-    def prep_df(self, drop_cols=None):
-        """ Preps the dataframe according to the group's convention
-        
-        """
-        if drop_cols == None:
-            drop_cols=['NYT_ConfirmedCases.data','NYT_ConfirmedDeaths.data','NYT_ConfirmedDeaths.missing',
-                       'county','LND110210','countyStateName','stateFip','countyFip']
-        # remove 
-        # self.df.columns = self.df.columns.str.replace(" ","")
-        self.df.drop(drop_cols,axis=1, inplace=True)
-   
-    def county_merger(self, file_Path):
-        counties = pd.read_csv(file_Path, delimiter='\t')
-        counties.columns = counties.columns.str.replace(" ", "")
-        counties = counties[['GEOID', 'INTPTLAT', 'INTPTLONG' ]]
-        self.df.fips = self.df.fips.astype('int64')
-        self.df = self.df.merge(counties, how='left', left_on='fips', right_on='GEOID')
-        self.df.drop(['GEOID'],axis=1, inplace=True)
-        return 
-    
-    
 def get_latlong_fc(cdf):
-    """ reads in and processes the county centroid lat/long into a TF feature column
+    """processes the county centroid lat/long into a TF feature column
+    Inputs:
+    
+        pd.Dataframe                      :   Primary dataframe from Noah's processing steps.
+                                                requires columns INTPTLAT and INTPTLONG
     
     Returns:
         tf.feature_column.crossed_column  :   This is the result of crossing lat and long
@@ -94,6 +57,55 @@ def get_latlong_fc(cdf):
     
     
     return cross_coordinate_fc
+
+
+
+
+
+
+class DatasetManager():
+    def __init__(self, filepath) -> None:
+        self.datapath = filepath
+        self.df = None
+        self._load_bz2(self.datapath)
+        self.feature_columns = None
+        self.standard_drops = ['NYT_ConfirmedCases.data','NYT_ConfirmedDeaths.data','NYT_ConfirmedDeaths.missing',
+                       'county','LND110210','countyStateName','stateFip','countyFip']
+    def _load_bz2(self)-> pd.DataFrame:
+        """Returns dataframe contained within the compressed pickle file
+        
+        """
+        with bz2.BZ2File(self.datapath, 'rb')as data:
+            self.df = pd.read_pickle(data)
+        
+    
+    def prep_df(self, drop_cols=None, countyFile='2021_Gaz_counties_national.txt'):
+        """ Preps the dataframe according to the group's convention
+        
+        """
+        if drop_cols == None:
+            drop_cols=self.standard_drops
+        else:
+            # ensure the standard columns to drop are still there
+            included_drops = self.standard_drops # [x for x in self.standard_drops (if x in drop_cols)]
+        # remove 
+        # self.df.columns = self.df.columns.str.replace(" ","")
+        self.df.drop(drop_cols,axis=1, inplace=True)
+        self.county_merger(countyFile)
+        
+    def county_merger(self, file_Path):
+        counties = pd.read_csv(file_Path, delimiter='\t')
+        counties.columns = counties.columns.str.replace(" ", "")
+        counties = counties[['GEOID', 'INTPTLAT', 'INTPTLONG' ]]
+        self.df.fips = self.df.fips.astype('int64')
+        self.df = self.df.merge(counties, how='left', left_on='fips', right_on='GEOID')
+        self.df.drop(['GEOID'],axis=1, inplace=True)
+        
+        self.feature_column = get_latlong_fc(self.df)
+        return 
+    
+    
+
         
         
 if __name__ == '__main__':
