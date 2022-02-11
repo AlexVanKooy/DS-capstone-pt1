@@ -10,6 +10,8 @@ dsci591/data/covid/d_ij.npy
 dsci591/data/covid/county_tp.pickle
 .idea
 experiments/noah/logs
-
-
+.vscode
+*.workspace
+experiments/avk/logs/
+experiments/avk/data/
 

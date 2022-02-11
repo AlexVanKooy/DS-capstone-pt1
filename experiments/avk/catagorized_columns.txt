@@ -1,0 +1,115 @@
+Drop these 
+
+'NYT_ConfirmedCases.data',
+'NYT_ConfirmedDeaths.data',
+'NYT_ConfirmedDeaths.missing',
+
+
+
+
+
+----- Quick filters ----
+
+
+
+--- BLS ----
+'BLS_EmployedPopulation.data',
+'BLS_EmployedPopulation.missing',
+'BLS_UnemployedPopulation.data',
+'BLS_UnemployedPopulation.missing',
+'BLS_UnemploymentRate.data',
+'BLS_UnemploymentRate.missing',
+'BLS_LaborForcePopulation.data',
+'BLS_LaborForcePopulation.missing',
+
+
+
+
+--- Current Air Parameters ----
+
+'AverageDailyTemperature.data',
+'AverageDailyTemperature.missing',
+'AverageDewPoint.data',
+'AverageDewPoint.missing',
+'AverageRelativeHumidity.data',
+'AverageRelativeHumidity.missing',
+'AverageSurfaceAirPressure.data',
+'AverageSurfaceAirPressure.missing',
+'AveragePrecipitationTotal.data',
+'AveragePrecipitationTotal.missing',
+'AveragePrecipitation.data',
+'AveragePrecipitation.missing',
+'AverageWindDirection.data',
+'AverageWindDirection.missing',
+'AverageWindSpeed.data',
+'AverageWindSpeed.missing',
+
+
+---- misc weather data ----
+'cold_days',
+'hot_days',
+'moderate_days',
+'gte_65_percent',
+'lt_18_percent',
+
+----- Population ----
+'latestTotalPopulation',
+'TotalPopulation.data',
+'MaleAndFemale_AtLeast65_Population.data',
+'Male_Total_Population.data',
+'Female_Total_Population.data',
+'MaleAndFemale_Under18_Population.data',
+
+'density',
+
+
+
+----- Transit ------
+'publicTrans',
+'totalTrans',
+
+---- relocation (static per county) ----
+'totalMoved',
+'movedWithinState',
+'movedWithoutState',
+'movedFromAbroad'
+
+
+---- employment/census (static per county)  -----
+'employed_percent',
+'unemployed_percent',
+'totalMoved',
+'movedWithinState',
+'movedWithoutState',
+'movedFromAbroad',
+'householdsTotal',
+'houseWith65',
+'house2+with65',
+'houseFamily65',
+'houseNonfam65',
+'houseNo65',
+'house2+No65',
+'houseFamilyNo65',
+'houseNonfamNo65',
+'householdStructuresTotal',
+'householdIncomeMedian',
+'gini',
+'hoursWorkedMean',
+'unitsInStructure',
+'healthInsTotal',
+'healthInsNativeWith',
+'healthInsForeignNatWith',
+'healthInsForeignNoncitWith',
+'healthInsForeignNatNo',
+'healthInsForeignNoncitNo',
+
+---- hospital metrics (static per county)  -----
+'hospitalIcuBeds',
+'hospitalStaffedBeds',
+'hospitalLicensedBeds',
+'icu_beds_per_person',
+'staffed_beds_per_person',
+'licensed_beds_per_person',
+
+
+
