@@ -9,5 +9,7 @@ dsci591/data/covid/processed_data/merged_eda/sdf.pkl
 dsci591/data/covid/d_ij.npy
 dsci591/data/covid/county_tp.pickle
 .idea
+experiments/noah/logs
+
 
 
