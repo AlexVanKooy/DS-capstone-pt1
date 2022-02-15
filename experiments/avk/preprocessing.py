@@ -73,13 +73,13 @@ class DatasetManager():
                        'county','LND110210','countyStateName','stateFip','countyFip']
         self.min_date =None
         self.max_date = None
-    def _load_bz2(self)-> pd.DataFrame:
+    def _load_bz2(self):
         """Returns dataframe contained within the compressed pickle file
         
         """
         with bz2.BZ2File(self.datapath, 'rb')as data:
             self.df = pd.read_pickle(data)
-        
+        return
     
     def prep_df(self, drop_cols=None, countyFile='2021_Gaz_counties_national.txt'):
         """ Preps the dataframe according to the group's convention
@@ -94,6 +94,7 @@ class DatasetManager():
         # self.df.columns = self.df.columns.str.replace(" ","")
         self.df.drop(drop_cols,axis=1, inplace=True)
         self.county_merger(countyFile)
+        self.date_magic()
         
     def county_merger(self, file_Path):
         counties = pd.read_csv(file_Path, delimiter='\t')
@@ -122,16 +123,13 @@ class DatasetManager():
         self.df.drop('day', axis  =1, inplace=True)
         return
 
+
         
         
 if __name__ == '__main__':
     
     # avk_ex_folder = pathlib.Path(__file__).parent.resolve()
     # data_path = pathlib.Path.joinpath(avk_ex_folder,'..','..','data','golden','feeFiFoFum.pbz2').resolve()
-    
-    # data_manager = DatasetManager(data_path)
-    # data_manager.prep_df()
-    # data_manager.county_merger(avk_ex_folder.joinpath('2021_Gaz_counties_national.txt'))
-    # top_dir = pathlib.Path(__file__).parent.parent.resolve()
+
     top_dir = pathlib.Path(__file__).joinpath("..","..","..").resolve()
-    print(top_dir)
+    
