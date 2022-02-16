@@ -3,6 +3,7 @@ pyproject.toml
 setup.cfg
 src/dsci592/__init__.py
 src/dsci592/covid_collector.py
+src/dsci592/model.py
 src/dsci592.egg-info/PKG-INFO
 src/dsci592.egg-info/SOURCES.txt
 src/dsci592.egg-info/dependency_links.txt
