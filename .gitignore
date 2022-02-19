@@ -13,3 +13,6 @@ dsci591/data/covid/county_tp.pickle
 *.workspace
 experiments/avk/logs/
 experiments/avk/data/
+**.npy
+**.npz
+
