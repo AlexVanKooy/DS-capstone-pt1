@@ -11,7 +11,6 @@ import configparser
 
 import pandas as pd
 import numpy as np
-from sklearn import naive_bayes
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import backend as K
@@ -181,13 +180,8 @@ def train_test_eval_split(source='./data', train='./data/train', test='./data/te
             shutil.move(file, subdir)
 
 
-def get_train_test_eval_ds(datadir = None, train='./data/train/x_*.npy', eval_='./data/eval/x_*.npy',
+def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.npy',
                            test='./data/test/x_*.npy', n_readers=5, n_parse_threads=5):
-    
-    if train == None:
-        train='./data/train/x_*.npy'
-        eval_='./data/eval/x_*.npy'
-        test='./data/test/x_*.npy'
     train_files = glob(train)
     eval_files = glob(eval_)
     test_files = glob(test)
@@ -220,9 +214,3 @@ def get_train_test_eval_ds(datadir = None, train='./data/train/x_*.npy', eval_='
     test_ds = test_ds.map(split_xy, num_parallel_calls=n_parse_threads).prefetch(1)
 
     return train_ds, val_ds, test_ds
-
-
-
-
-if __name__ == '__main__':
-    
