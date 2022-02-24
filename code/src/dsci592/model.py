@@ -138,13 +138,13 @@ def xy_generator(data, fips, days=31):
             yield data_matrix
 
 
-def prepare_data(df, days_of_history=30, days_to_predict=1, n_samples=200, output_path='./data'):
+def prepare_data(df, days_of_history=30, days_to_predict=7, n_samples=200, output_path='./data'):
     fips = df.fips.unique()
 
     Xi = []
     j = 0
 
-    for i, x in enumerate(xy_generator(df, fips)):
+    for i, x in enumerate(xy_generator(df, fips, days=days_of_history+days_to_predict)):
         Xi.append(x)
         if i and not i % (n_samples - 1):
             X = np.asarray(Xi)
@@ -181,7 +181,8 @@ def train_test_eval_split(source='./data', train='./data/train', test='./data/te
 
 
 def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.npy',
-                           test='./data/test/x_*.npy', n_readers=5, n_parse_threads=5):
+                           test='./data/test/x_*.npy', n_readers=5, n_parse_threads=5,
+                           days_to_predict=1):
     train_files = glob(train)
     eval_files = glob(eval_)
     test_files = glob(test)
@@ -197,8 +198,8 @@ def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.
             yield np_array
 
     def split_xy(np_array):
-        X = np_array[:, :-1, :]
-        y = np_array[:, -1:, :1]
+        X = np_array[:, :-days_to_predict, :]
+        y = np_array[:, -days_to_predict:, :1]
         return X, y
 
     train_ds = tf.data.Dataset.from_generator(lambda: create_generator(train_files, cycle_length=n_readers),
