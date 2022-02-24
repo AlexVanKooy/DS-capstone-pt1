@@ -111,7 +111,7 @@ def load_dataset(filepath: str) -> pd.DataFrame:
                 'continuous_sin',
                 'continuous_cos', 'geo0', 'geo1', 'geo2', 'geo3', 'geo4', 'geo5', 'geo6', 'geo7', 'geo8']
     df_normalized = df[cols_to_normalize]
-    df_normalized = (df_normalized - df_normalized.mean()) / (df_normalized.std()+0.000001)
+    df_normalized = (df_normalized - df_normalized.mean()) / df_normalized.std()
     df_raw = df[cols_raw]
     df = pd.concat([df_raw, df_normalized], axis=1)
 
@@ -123,7 +123,7 @@ def xy_generator(data, fips, days=31):
         if not j % 100: print(j, end=' ')
         county = data[data.fips == fip]
         for i in range(days, len(county) + 1):
-            data_matrix = county.iloc[i - days: i, 1:].to_numpy()
+            data_matrix = data.iloc[i - days: i, 1:].to_numpy()
             yield data_matrix
 
 
