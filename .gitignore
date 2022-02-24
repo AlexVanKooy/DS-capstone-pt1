@@ -8,7 +8,9 @@ scratch.ipynb
 dsci591/data/covid/processed_data/merged_eda/sdf.pkl
 dsci591/data/covid/d_ij.npy
 dsci591/data/covid/county_tp.pickle
+**.pkl
 .idea
+<<<<<<< HEAD
 experiments/noah/logs
 .vscode
 *.workspace
@@ -17,3 +19,13 @@ experiments/avk/data/
 *.npy
 *.npz
 *.h5
+=======
+**/.vscode
+*.workspace
+experiments/avk/logs/
+experiments/avk/data/
+**.npy
+**.npz
+**/__pycache__/
+
+>>>>>>> main
