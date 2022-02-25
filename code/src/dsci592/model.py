@@ -120,9 +120,14 @@ def load_dataset(filepath: str) -> pd.DataFrame:
 
 def xy_generator(data, fips, days=31):
     for j, fip in enumerate(fips):
-        if not j % 100: print(j, end=' ')
+        if not j % 100:
+            print(j, end='.')
         county = data[data.fips == fip]
         for i in range(days, len(county) + 1):
+            first = round((np.arcsin(county.iloc[0, 4])/(np.pi*2))*3650)
+            last = round((np.arcsin(county.iloc[-1, 4])/(np.pi*2))*3650)
+            if last - first > days - 1:
+                continue
             data_matrix = county.iloc[i - days: i, 1:].to_numpy()
             yield data_matrix
 
