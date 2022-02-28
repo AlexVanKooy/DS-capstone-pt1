@@ -175,7 +175,7 @@ def train_test_eval_split(source='./data', train='./data/train', test='./data/te
 
 def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.npy',
                            test='./data/test/x_*.npy', n_readers=5, n_parse_threads=5,
-                           days_to_predict=1):
+                           days_to_predict=1, cols=None):
     train_files = glob(train)
     eval_files = glob(eval_)
     test_files = glob(test)
@@ -187,6 +187,8 @@ def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.
             subset = files[i:i + cycle_length]
             np_arrays = [np.load(s) for s in subset]
             np_array = np.concatenate(np_arrays, axis=0)
+            if cols is not None:
+                np_array = np_array[:, cols[0]:cols[1]]
             np.random.shuffle(np_array)
             yield np_array
 
