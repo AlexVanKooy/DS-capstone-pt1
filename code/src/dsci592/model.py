@@ -188,7 +188,7 @@ def get_train_test_eval_ds(train='./data/train/x_*.npy', eval_='./data/eval/x_*.
             np_arrays = [np.load(s) for s in subset]
             np_array = np.concatenate(np_arrays, axis=0)
             if cols is not None:
-                np_array = np_array[:, cols[0]:cols[1]]
+                np_array = np_array[:, :, cols[0]:cols[1]]
             np.random.shuffle(np_array)
             yield np_array
 
