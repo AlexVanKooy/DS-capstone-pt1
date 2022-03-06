@@ -10,8 +10,8 @@
 - Evan Falkowski
 - Richard Strouss
 
-## DSCI Module
-- [DSCI Module](./code)
+### DSCI Module
+- [DSCI Module Code Directory](./code)
 - Instructions
   - Clone repo
   - Navigate to DS-Capstone-pt1/code
@@ -19,17 +19,13 @@
   - Execute `pip install -e .`
 
 
+### Noah's Experiments
+
+- [Notebook 1: Demonstrates building dataset step by step and includes HParams hyperparameter search](./experiments/noah/discovery.ipynb)
+- [Notebook 2: Includes additional tuning experiments](./experiments/noah/discovery-2.ipynb)
+- [Notebook 3: Baseline calculations and graphics](./experiments/noah/baseline.ipynb)
+- [Notebook 4: Example of using DSCI module](./experiments/noah/discover-mod.ipynb)
+- [Notebook 5: Week 8 presentation](./experiments/noah/presentation.ipynb)
 
 
-### Covid Analysis Notebooks
-- [Covid-19 Data Collection](./dsci591/data/covid/covid_data_collection.ipynb)
-- [Covid-19 Data Analysis](./dsci591/data/covid/covid_data_analysis.ipynb) (Too large to view on GitHub.  Must download or clone)
-- [Python requirements to run](./dsci591/data/covid/requirements.txt)* 
-
-##### *After cloning repo, execute `pip install -r requirements.txt` from the data/covid sub-directory
-
-### Pollutant Analysis Notebooks
-- [Pollution Collection](/dsci591/pollution_data_collection.ipynb)
-- [Nitrogen dioxide EDA and comparison to Covid](/dsci591/avk_data_investigation.ipynb)
-- [Python requirements to run](/dsci591/pollution_requirements.txt)
 
