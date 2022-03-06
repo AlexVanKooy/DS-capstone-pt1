@@ -1,5 +1,7 @@
 # DS-capstone-pt1
-Exploratory analysis of pollution effects on the spread of Covid-19
+## Using a Recurrent Neural Network to Predict Covid-19 Case Counts
+### Drexel University
+### DSCI 592
 
 ## Contributors
 
@@ -7,6 +9,17 @@ Exploratory analysis of pollution effects on the spread of Covid-19
 - Noah Krieger
 - Evan Falkowski
 - Richard Strouss
+
+## DSCI Module
+- [DSCI Module](./code)
+- Instructions
+  - Clone repo
+  - Navigate to DS-Capstone-pt1/code
+  - Execute `pip install -r requirements.txt` 
+  - Execute `pip install -e .`
+
+
+
 
 ### Covid Analysis Notebooks
 - [Covid-19 Data Collection](./dsci591/data/covid/covid_data_collection.ipynb)
