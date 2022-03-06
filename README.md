@@ -18,14 +18,13 @@
   - Execute `pip install -r requirements.txt` 
   - Execute `pip install -e .`
 
-
 ### Noah's Experiments
 
 - [Notebook 1: Demonstrates building dataset step by step and includes HParams hyperparameter search](./experiments/noah/discovery.ipynb)
 - [Notebook 2: Includes additional tuning experiments](./experiments/noah/discovery-2.ipynb)
 - [Notebook 3: Baseline calculations and graphics](./experiments/noah/baseline.ipynb)
-- [Notebook 4: Example of using DSCI module](./experiments/noah/discover-mod.ipynb)
-- [Notebook 5: Week 8 presentation](./experiments/noah/presentation.ipynb)
+- [Notebook 4: Example of using DSCI module](./experiments/noah/discovery-mod.ipynb)
+- [Notebook 5: Original attempt at creating a location embedding](./experiments/noah/location_embedding.ipynb)
 
 
 
