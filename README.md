@@ -28,3 +28,8 @@
 
 
 
+### Alex's Experiments ###
+
+- [Initial construction of 7  day prediction model as well as the hyper parameter search](./experiments/avk/avk_discovery.ipynb)
+- [Notebook used to verify validity of data processing and dataset construction](./experiments/avk/avk_discovery_verification.ipynb)
+- [Notebook that was used to fine tune model training](./experiments/avk/training_models.ipynb)
