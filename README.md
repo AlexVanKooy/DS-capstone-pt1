@@ -1,5 +1,7 @@
 # DS-capstone-pt1
-Exploratory analysis of pollution effects on the spread of Covid-19
+## Using a Recurrent Neural Network to Predict Covid-19 Case Counts
+### Drexel University
+### DSCI 592
 
 ## Contributors
 
@@ -8,15 +10,21 @@ Exploratory analysis of pollution effects on the spread of Covid-19
 - Evan Falkowski
 - Richard Strouss
 
-### Covid Analysis Notebooks
-- [Covid-19 Data Collection](./dsci591/data/covid/covid_data_collection.ipynb)
-- [Covid-19 Data Analysis](./dsci591/data/covid/covid_data_analysis.ipynb) (Too large to view on GitHub.  Must download or clone)
-- [Python requirements to run](./dsci591/data/covid/requirements.txt)* 
+### DSCI Module
+- [DSCI Module Code Directory](./code)
+- Instructions
+  - Clone repo
+  - Navigate to DS-Capstone-pt1/code
+  - Execute `pip install -r requirements.txt` 
+  - Execute `pip install -e .`
 
-##### *After cloning repo, execute `pip install -r requirements.txt` from the data/covid sub-directory
+### Noah's Experiments
 
-### Pollutant Analysis Notebooks
-- [Pollution Collection](/dsci591/pollution_data_collection.ipynb)
-- [Nitrogen dioxide EDA and comparison to Covid](/dsci591/avk_data_investigation.ipynb)
-- [Python requirements to run](/dsci591/pollution_requirements.txt)
+- [Notebook 1: Demonstrates building dataset step by step and includes HParams hyperparameter search](./experiments/noah/discovery.ipynb)
+- [Notebook 2: Includes additional tuning experiments](./experiments/noah/discovery-2.ipynb)
+- [Notebook 3: Baseline calculations and graphics](./experiments/noah/baseline.ipynb)
+- [Notebook 4: Example of using DSCI module](./experiments/noah/discovery-mod.ipynb)
+- [Notebook 5: Original attempt at creating a location embedding](./experiments/noah/location_embedding.ipynb)
+
+
 
