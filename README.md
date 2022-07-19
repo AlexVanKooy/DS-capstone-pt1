@@ -1,3 +1,11 @@
+# Frozen Branch
+This branch `end-of-term-frozen` is to be kept frozen in the state the project was completed for the Data Science Capstone pt2.
+
+
+
+
+
+
 # DS-capstone-pt1
 ## Using a Recurrent Neural Network to Predict Covid-19 Case Counts
 ### Drexel University
